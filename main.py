@@ -34,5 +34,85 @@ class Card(UserDict):
             print('{:^5}{:^5}{:^5}{:^5}{:^5}'.format(*line))
             line.clear()
             
-card = Card()
-card.pretty_card_info()
+class Player:
+    def __init__(self, name: str, card: Card):
+        self.card = card
+        self.name = name
+        self.winner = False
+
+    def check_winner(self):
+        for line in self.card.values():
+            if sum(line) == 0:
+                self.winner = True
+        
+        for index in range(self.card.limit_line):
+            temp_line = []
+            for key in self.card.keys():
+                temp_line.append(self.card[key][index])
+                if sum(temp_line) == 0:
+                    self.winner = True
+
+
+    def mark_number(self, number):
+        for line in self.card.values():
+            if number in line:
+                for i in range(len(line)):
+                    if line[i] == number:
+                        line[i] = 0
+
+class LotoGame:
+    def __init__(self, player_names):
+        self.number_of_plyers = len(player_names)
+        self.players_names = player_names
+        self.game_progress = 0
+        self.players: list[Player] = list()
+        self.winners: list[Player] = list()
+        self.drawn_numbers = list()
+    
+    def create_game(self):
+        for name in self.players_names:
+            card = Card()
+            player = Player(name, card)
+            self.players.append(player)
+        
+    def start_game(self):
+        while True:
+            self.step_game()
+            self.check_winners()
+            if len(self.winners) > 0:
+                break
+        return self.game_progress, self.winners
+
+    def step_game(self):
+        while True: 
+            number = randint(1, Card.number_per_letter * len(Card.loto_field))
+            if number not in self.drawn_numbers:
+                self.drawn_numbers.append(number)
+                break
+
+        for player in self.players:
+            player.mark_number(number)
+            player.check_winner()
+
+        self.game_progress += 1
+
+
+    def check_winners(self):
+        for player in self.players:
+            if player.winner:
+                self.winners.append(player)
+
+game = LotoGame(["Danyil", "Oleg", "Stepan", "Yra"])
+game.create_game()
+
+quntity, winners = game.start_game()
+print(f"Step required{quntity}")
+for winner in winners:
+    print(f"Winner {winner.name}")  
+    winner.card.pretty_card_info()
+    
+
+
+
+
+
